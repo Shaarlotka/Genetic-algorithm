@@ -83,10 +83,10 @@ def GDNS(clusters, matrix, total_parts):
     neighdorhood_structure = [change_machine_cluster, change_parts_cluster]
     final_solution = greedy_algorithm_vns(clusters, matrix)
     k = 0
-    while k != range(len(shaking_structures)):
+    while k != len(shaking_structures):
         solution = shaking_structures[k](final_solution)
         l = 0
-        while l != range(len(neighdorhood_structure)):
+        while l != len(neighdorhood_structure):
             new_solution = neighdorhood_structure[l](solution, matrix, total_parts)
             if (calculate_clusters(solution, matrix, total_parts) <
                 calculate_clusters(new_solution, matrix, total_parts)):
