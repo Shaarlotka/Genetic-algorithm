@@ -59,3 +59,4 @@ def genetic_evolution(gen_num, pure_ids, distances, pop_num, per_num, primes):
         population = build_new_population(population, mutated_children, gaps, new_gaps)
         gen_count += 1
     return population[0]
+    
