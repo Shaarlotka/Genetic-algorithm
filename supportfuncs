@@ -1,0 +1,109 @@
+import math
+import random
+import copy
+
+
+def greedy_algorithm_tsp(start_point, pure_ids, distances):
+    temp = dict(item for item in distances.items())
+    temp_list = [pure_ids[i] for i in range(len(pure_ids))]
+    solution = list()
+    i = start_point
+    solution.append(i)
+    temp_list.remove(i)
+    while temp_list:
+        min_dist_key = (i, temp_list[0])
+        min_dist = max(temp.values())
+        temp_for_temp = [key for key in temp.keys()]
+        for key in temp_for_temp:
+            if i in key:
+                if temp[key] < min_dist:
+                    min_dist = temp[key]
+                    min_dist_key = key
+                temp.pop(key)
+        j = 0
+        while True:
+            if min_dist_key[j] != i:
+                i = min_dist_key[j]
+                break
+            j += 1
+        temp_list.remove(i)
+        solution.append(i)
+
+    return solution
+
+
+def euclid_counts_distance(vertexes):
+    pure_ids = [key for key in vertexes.keys()]
+    distances = dict()
+    for id_1 in pure_ids:
+        for id_2 in pure_ids:
+            if not ((id_2, id_1) in distances) and (id_1 != id_2):
+                distances[id_1, id_2] = \
+                    math.sqrt((vertexes[id_1][0] - vertexes[id_2][0])**2 +
+                              (vertexes[id_1][1] - vertexes[id_2][1])**2)
+    return pure_ids, distances
+
+
+def calculate_route(solution, distances, primes):
+    sum = 0
+    tempLength = 0
+    step = 1
+    for i in range(len(solution) - 1):
+        if not (solution[i], solution[i + 1]) in distances:
+            tempLength = distances[solution[i + 1], solution[i]]
+        else:
+            tempLength = distances[solution[i], solution[i + 1]]
+        if step % 10 == 0 and (not (solution[i] in primes)):
+            tempLength *= 1.1
+        sum += tempLength
+        step += 1
+    tempLength = distances[solution[0], solution[i + 1]]
+    if step % 10 == 0 and (not (solution[i + 1] in primes)):
+        tempLength *= 1.1
+    sum += tempLength
+    return sum
+
+
+def generate_start_points(num, pure_ids, distances):
+    start_points = list()
+    i = 0
+    while i < num:
+        temp = random.choice(pure_ids)
+        if not (temp in start_points):
+            start_points.append(temp)
+            i += 1
+    first_population = list()
+    for i in start_points:
+        temp = greedy_algorithm_tsp(i, pure_ids, distances)
+        index = temp.index(1)
+        new_temp = list()
+        new_temp.extend(temp[index:])
+        new_temp.extend(temp[:index])
+        first_population.append(new_temp)
+
+    return first_population
+
+
+def is_prime(number):
+    if number % 2 == 0:
+        return number == 2
+    current = 3
+    while current * current <= number and number % current > 0:
+        current += 2
+    return number < current * current
+
+
+def generate_primes_from_ids(pure_ids):
+    primes = list()
+    for i in pure_ids:
+        if is_prime(i) and i > 1:
+            primes.append(i)
+    return primes
+
+
+def convert(times):
+    vertexes = dict()
+    for i in range(times):
+        temp = input().split(' ')
+        vertexes[int(temp[0])] = [int(temp[1]), int(temp[2])]
+    return vertexes
