@@ -9,16 +9,70 @@ def fitness(population, distances, primes):
     return gaps
 
 
-def reprodection(parants):
-    return 0
+def child_production(parant_1, parant_2):
+    child = list()
+    path_len = len(parant_1)
+    child.append(parant_1[0])
+    index1 = random.randint(1, path_len)
+    index2 = random.randint(1, path_len)
+    first = min(index1, index2)
+    last = max(index1, index2)
+    tmp_1 = [item for item in parant_1[first:last]]
+    tmp_2 = [item for item in parant_2 if item not in tmp_1 and item not in child]
+    tmp_1_count = 0
+    tmp_2_count = 0
+    for k in range(1, path_len):
+        if (k in range(first, last)):
+            child.append(tmp_1[tmp_1_count])
+            tmp_1_count += 1
+        else:
+            child.append(tmp_2[tmp_2_count])
+            tmp_2_count += 1
+    return child
+
+
+def reprodection(parants, per_num):
+    children = list()
+    for i in range(per_num - 1):
+        for j in range(i + 1, per_num):
+            children.append(child_production(parants[i], parants[j]))
+    return children
 
 
 def mutate(children):
-    return 0
+    child_len = len(children[0])
+    mutation_volume = int(child_len / 100 * 5 + 0.5)
+    for i in range (len(children)):
+        index = random.randint(1, child_len - mutation_volume)
+        tmp = children[i][index:index+mutation_volume]
+        random.shuffle(tmp)
+        children[i][index:index+mutation_volume] = tmp
+    return children
+
+
+def sort(population, gaps):
+    pop = [y for x,y in sorted(zip(gaps, population))]
+    gaps = sorted(gaps)
+    return pop, gaps
 
 
 def build_new_population(population, mutated_children, gaps, new_gaps):
-    return 0
+    pop = list()
+    gap = list()
+    population, gaps = sort(population, gaps)
+    mutated_children, new_gaps = sort(mutated_children, new_gaps)
+    count = 0
+    new_count = 0
+    for i in range(len(population)):
+        if (gaps[count] < new_gaps[new_count]):
+            pop.append(population[count])
+            gap.append(gaps[count])
+            count += 1
+        else:
+            pop.append(mutated_children[new_count])
+            gap.append(new_gaps[new_count])
+            new_count += 1
+    return pop, gap
 
 
 def selection_wheel(choose_n, choose_from, distances, primes):  #returns indexes of chosen parents in population
@@ -47,15 +101,23 @@ def selection_wheel(choose_n, choose_from, distances, primes):  #returns indexes
     return chosen_ones
 
 
+def selection(per_num, population, distances, primes):
+    parants = list()
+    indexes = selection_wheel(per_num, population, distances, primes)
+    for i in  indexes:
+        parants.append(population[i])
+    return parants
+
+
 def genetic_evolution(gen_num, pure_ids, distances, pop_num, per_num, primes):
     gen_count = 0
     population = soup.generate_start_points(pop_num, pure_ids, distances)
     gaps = fitness(population, distances, primes)
     while (gen_count != gen_num):
-        parants = selection_wheel(per_num, population, distances, primes)
-        children = reprodection(parants)
+        parants = selection(per_num, population, distances, primes)
+        children = reprodection(parants, per_num)
         mutated_children = mutate(children)
         new_gaps = fitness(mutated_children, distances, primes)
-        population = build_new_population(population, mutated_children, gaps, new_gaps)
+        population, gaps = build_new_population(population, mutated_children, gaps, new_gaps)
         gen_count += 1
     return population[0]
